@@ -32,15 +32,11 @@ public class DelayMonitor implements InitializingBean {
     private final ApplicationContext applicationContext;
     private final DelayQueue delayQueue;
 
-    private Map<String, DelayConsume<?>> consumeMap;
+    private Map<String, DelayConsume> consumeMap;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Map<String, DelayConsume> beansOfType = applicationContext.getBeansOfType(DelayConsume.class);
-        consumeMap = new HashMap<>(beansOfType.size());
-        for (DelayConsume consume : beansOfType.values()) {
-            consumeMap.put(consume.consumerKey(), consume);
-        }
+        consumeMap = new HashMap<>(applicationContext.getBeansOfType(DelayConsume.class));
     }
 
     private void handler(Message message) {
@@ -77,7 +73,6 @@ public class DelayMonitor implements InitializingBean {
     private void retry(int count, Message message) {
         String json = new String(message.getBody());
         MessageProperties properties = message.getMessageProperties();
-        ExceptionRetryStrategy strategy = ExceptionRetryStrategy.valueOf(properties.getHeader(MessageHeader.EXCEPTION_STRATEGY));
 
         AtomicInteger retryTime;
         if (properties.getHeaders().containsKey(MessageHeader.RETRY_TIME)) {
