@@ -36,7 +36,11 @@ public class DelayMonitor implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        consumeMap = new HashMap<>(applicationContext.getBeansOfType(DelayConsume.class));
+        Map<String, DelayConsume> beansOfType = applicationContext.getBeansOfType(DelayConsume.class);
+        consumeMap = new HashMap<>(beansOfType.size());
+        for (DelayConsume consume : beansOfType.values()) {
+            consumeMap.put(consume.consumerKey(), consume);
+        }
     }
 
     private void handler(Message message) {
